@@ -1,0 +1,231 @@
+---
+title: "Exploring the BRFSS data"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+### Load data
+
+```{r load-data}
+load("brfss2013.RData")
+```
+
+* * *
+
+## Part 1: Data
+
+The Behavioral Risk Factor Surveillance System (BRFSS) is health survey which was initiated in 1984, with 15 states collecting surveillance data on risk behaviors (such as tobacco use, HIV/AIDS knowledge, exercise, health status, etc.). Today, all 50 states, the District of Columbia, Puerto Rico, and Guam collect data annually, and American Samoa, Federated States of Micronesia, and Palau collect survey data over a limited point-in-time for adult population aged 18 years or older, who reside in these areas. The BRFSS objective is to gather uniform, state-specific data on health practices which can prevent, reduce or are related to chronic diseases and injuries that affect the adult population.
+
+The BRFSS collects such data using both landline and cell phones. For landline survey, interviewers call a house randomly, then gather data from an adult in that randomly selected household. In the mobile version, interviewers collect data from an adult who resides in a private residence or college housing.
+
+**Sampling Method**
+Disproportionate stratified sampling (DSS) has been used for the landline sample. DDS draws telephone numbers from two strata (lists) that are based on the presumed density of known telephone household number. The cellular telephone sample is randomly generated from a sampling frame of confirmed cellular area code and prefix combinations. Cellular telephone respondents are randomly selected with each having equal probability of selection.
+
+Based on above, the data can be generalized to the US adult population (18 years and older) that resides in a private residence or college housing. And Since random assigment was not used, there is no causality in this study.
+
+
+* * *
+
+## Part 2: Research questions
+
+**Research question 1:**
+
+Several studies have shown that exercise and health status are significantly correlated and exercise along with other practices can be correlated to better health status in population (Pohjonen and Ranta 2001). On the other hand, studies have been shown that when education level increases, body and health awareness will increase accordingly. So, understanding the relationship between how often a person might have been exercise during the past month and their education attainment could help us to understand or explain his/her health status better. Do exercising during past month have any relationship with the health situation of the population and their education level?
+
+**Research question 2:**
+
+Several studies have been depicted the contribution of blood pressure and cholesterol concentration to health status in western populations (Leppälä et al. 1999), so the level of cholesterol awareness among population might help us to understand the relationship between blood pressure and health status better. Do cholesterol and high blood pressure have any relationship with health status?
+
+**Research question 3:**
+
+The data has been gathered from a population with different health status and income levels and whether the person will be considered as an obese or not. Researchers have been shown that socioeconomic status (SES) might be associated with health status and body mass (BMI) (Adler et al. 1994). Considering the different level of income might help us to understand the relationship between SES and health status of the population better. Does income of household have any relationship with the health situation of the population and whether they are obese or not?
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+**Research question 1:**
+As a first question, we are interested in exploring the relationship between the health status the person has `_rfhlth`, the level of education s/he has `_educag`, and whether s/he has been exercised in past 30 days or not `exerany2`. Since viewing the entire dataset in data viewer by using `view()` or `str()` is ineffective, for ease of use, we subset the columns of interest using the `dplyr`.
+
+R has rules about what variable names are legal and when data is loaded, R will fix variable names to make them legal. This happened to the `_rfhlth` , `_educag` at the time of loading the data (We confronted with this problem in research question 2 & 3 for `_cholchk`, `_incomg`, `_rfhype5` and `_rfbmi5` variables as well, so for the sake of document flow we do not repeat the following steps in later research questions).
+
+Since we have hundreds of column names, using `names(brfss2013)` was not helpful so we searched out only possible names. We searched the names for a fragment of the name by using the `grep` for the variable of interest only:
+
+```{r}
+grep("rfhlth", names(brfss2013), value = TRUE)
+grep("educag", names(brfss2013), value = TRUE)
+grep("cholchk", names(brfss2013), value = TRUE)
+grep("incomg", names(brfss2013), value = TRUE)
+grep("rfhype5", names(brfss2013), value = TRUE)
+grep("rfbmi5", names(brfss2013), value = TRUE)
+```
+
+We can now confirm that the variables are called `X_rfhlth`, `X_educag`, `X_incomg`, `X_rfhype5`, `X_rfbmi5`, and `X_cholchk` so that is how we should be referring to them and subset the dataset using these variables of interest.
+
+```{r}
+brfss2013 %>% 
+  select(X_rfhlth,X_educag,X_cholchk,X_incomg,X_rfhype5,X_rfbmi5,exerany2) %>% 
+  str()
+```
+
+These are all categorical data which are recorded as factors. A simple way of tabulating these data to see how many times each level of health status is, to use the `group_by()` function along with the `summarise()` command:
+
+```{r}
+brfss2013 %>% 
+  group_by(X_rfhlth) %>% 
+  summarise(count = n())
+```
+
+We can see that we have 1989 `NA`. In this case, since NA indicates that we did not know the health status (or the person did not answer the question about her/his health status) excluding them from the analysis makes sense.
+
+```{r}
+brfss2013 %>%
+  filter(!is.na(X_rfhlth)) %>%
+  group_by(X_rfhlth) %>% 
+  summarise(count = n())
+```
+
+We can view the levels and numbers of occurrences of these levels in the `X_educag`, `X_cholchk`, `X_incomg`, `X_rfhype5`, `exerany2`, and `X_rfbmi5` variables too:
+
+```{r}
+brfss2013 %>% 
+  group_by(X_educag) %>% 
+  summarise(count = n())
+
+brfss2013 %>% 
+  group_by(X_cholchk) %>% 
+  summarise(count = n())
+
+brfss2013 %>% 
+  group_by(X_incomg) %>% 
+  summarise(count = n())
+
+brfss2013 %>% 
+  group_by(X_rfhype5) %>% 
+  summarise(count = n())
+
+brfss2013 %>% 
+  group_by(exerany2) %>% 
+  summarise(count = n())
+
+brfss2013 %>% 
+  group_by(X_rfbmi5) %>% 
+  summarise(count = n())
+
+```
+
+These sets also have `NA` entries. Since we want the entries that are **not** `NA`s we used the `!` operator to filter them out;
+
+As we can see, `X_educag` has five different levels; `Did not graduate High School`, `Graduated High School`, `Attended College or Technical School`, `Graduated from College or Technical School` and `Don't know/Not sure/Missing` or `NA`.
+
+```{r}
+brfss2013 %>% 
+  filter(!is.na(X_educag)) %>%
+  filter(!is.na(X_cholchk)) %>%
+  filter(!is.na(X_incomg)) %>%
+  filter(!is.na(exerany2)) %>%
+  filter(!is.na(X_rfhype5)) %>%
+  filter(!is.na(X_rfbmi5)) %>%
+  group_by(X_educag) %>% 
+  summarise(count = n())
+```
+
+Our most important question for research question 1 is whether people with Good or Poor health have exercise within past 30 days or not and how it is related to their education level. Thus a simple approach would be whether each observation in the data represents a person who has a good health status same as doing exercise in past 30 days and then what is this person's education level. 
+
+we created a new variable called `rfhlth` and changed `Good or Better Health` and `Fair or Poor Health` to `Good` and `Poor` respectively by `mutate()` function;
+
+```{r}
+brfss2013 <- brfss2013 %>%
+  mutate(rfhlth = ifelse(X_rfhlth == "Good or Better Health", "Good", "Poor"))
+```
+
+`rfhlth` has some `NA` values as well (Because we just mutated it from `X_rfhlth` variable.
+
+```{r}
+brfss2013<-brfss2013[!is.na(brfss2013$rfhlth), ]
+```
+
+Since we only want to study people who have answered about their health status, we will remove all `NA` values in `rfhlth` variable. 
+
+```{r}
+brfss2013<-brfss2013[!is.na(brfss2013$X_educag), ]
+```
+
+Since we want to know what education level has to do with health status and doing exercise, we removed all `NA` values from `X_educag` variable.
+
+```{r}
+ggplot(brfss2013[!is.na(brfss2013$exerany2), ], aes(x=rfhlth, fill = X_educag)) +
+  geom_bar(position="dodge") + facet_wrap( ~ exerany2, ncol=2)
+```
+
+This plot shows whether people who have done exercise during past 30 days or not (`Yes`/`No` on the top pf plot) and whether these people have `Good` or `Poor` health status. On the other hand, we can see the level of education of each of these groups. As the plot depicts, people who have done exercise during past 30 days (left side of plot) and have a good health status, have higher education level. This might be due to having a higher health and body awareness among these group, and as the degree of education increases, number of people who have exercised and have a good health status increase as well.
+
+When we take into account above findings, we may conclude that there is a relationship between education level, exercising and health status among the population.
+
+**Research question 2:**
+
+For this question and it related variables (`X_cholchk`, `X_rfhype5`, and `X_rfhlth`), we did some data organization and cleaning in the previous section, thus we will omit that part in this question.
+
+Our important issue for research question 2 is whether people with Good or Poor health have cholesterol awareness and do these people have blood pressure as well? Thus, a simple approach would be whether each observation in the data represents an individual who has a good health status same as having blood pressure and then what is this person's cholesterol awareness.
+
+```{r}
+brfss2013<-brfss2013[!is.na(brfss2013$X_cholchk), ]
+```
+
+Variable `X_cholchk` has four different levels; `Had cholesterol checked in past 5 years`, `Did not have cholesterol checked in past 5 years`, `Have never had cholesterol checked`, and `Don't know/Not Sure Or Refused/Missin` or `NA`. Here we removed all `NA` values from `X_cholchk` variable, so we will have an only observation which has a "meaningful" value in terms of cholesterol awareness. 
+
+
+```{r}
+ggplot(brfss2013[!is.na(brfss2013$exerany2), ], aes(x=rfhlth, fill = X_cholchk)) +
+  geom_bar(position="dodge") + facet_wrap( ~ exerany2, ncol=2)
+```
+
+This plot shows that whether individuals who have blood pressure (`Yes` or `No` on the top of the plot) and whether these people have `Good` or `Poor` health status. On the other hand, we can see how much do these people have cholesterol awareness and if they have checked their cholesterol level or not. As the plot represents, people with `Good` health status whose suffer from blood pressure, have checked their cholesterol in the past five years. We might interpret this observation in two ways. 1) A person with a high blood pressure and `Good` health status, has checked her/his cholesterol because s/he knew that has high blood pressure before. 2) A person with `Good` health status tend to have higher cholesterol awareness; thus s/she has checked her/his cholesterol and then found out that has high blood pressure.
+
+Based on these findings, we may conclude that there is a relationship between cholesterol awareness, blood pressure and health status among the population.
+
+**Research question 3:**
+
+For this question, we will consider the socioeconomic situation of the population (`X_incomg`), their health status (`rfhlth`) and the body mass of the population (`X_rfbmi5) and whether they are considered as an obese or not.
+
+```{r}
+brfss2013<-brfss2013[!is.na(brfss2013$X_incomg), ]
+```
+
+Variable `X_incomg` has six different levels; `Less than $15,000`, `$15,000 to less than $25,000`, `$25,000 to less than $35,000`, `$35,000 to less than $50,000`, `$50,000 or more`, and `Don't know/Not sure/Missing` or `NA`. Since we were interested of people who have reported they income, we excluded `NA` from our dataset.
+
+```{r}
+ggplot(brfss2013[!is.na(brfss2013$X_rfbmi5), ], aes(x=rfhlth, fill = X_incomg)) +
+  geom_bar(position="dodge") + facet_wrap( ~ X_rfbmi5, ncol=2)
+```
+
+This plot shows that whether individuals who have been considered as an obese (`Yes` or `No` on the top of the plot) and whether these people have `Good` or `Poor` health status. On the other hand, we can see how much are these people's income. As the plot shows, people with `Good` health status have higher income whether they are obese or not. The plots also represent that people with higher income are more obese than people with lower income. This could be in contradiction to the idea that people from the higher economic level in the society, may have a higher awareness of their health status. There might be a pre-assumption that individuals who have higher income, might eat healthier food. However, this plot shows a reverse trend. Considering race, ethnicity, education level, and other socioeconomic factors could help us to understand better the observed trend.
+
+For example, most of the college students who have been interviewed through cellphone and in college housing might fall into `$15,000 to less than $25,000` from income standpoint of view, and since these people could have higher education level, might have a better understanding of their health status and might eat healthier foods.
+
+Based on these findings, we may conclude that there is a relationship between obesity, income and health status among the population. While income increases, number of obese people increase as well.
+
+
+## References
+
+Adler NE, Boyce T, Chesney MA, Cohen S, Folkman S, Kahn RL, Syme SL. Socioeconomic status and health: the challenge of the gradient. American psychologist. 1994 Jan;49(1):15.
+
+Leppälä JM, Virtamo J, Fogelholm R, Albanes D, Heinonen OP. Different risk factors for different stroke subtypes association of blood pressure, cholesterol, and antioxidants. Stroke. 1999 Dec 1;30(12):2535-40.
+
+Pohjonen T, Ranta R. Effects of worksite physical exercise intervention on physical fitness, perceived health status, and work ability among home care workers: five-year follow-up. Preventive medicine. 2001 Jun 30;32(6):465-75.
+
+CDC - BRFSS Data User Guide
+https://www.cdc.gov/brfss/data_documentation/pdf/userguidejune2013.pdf
+
