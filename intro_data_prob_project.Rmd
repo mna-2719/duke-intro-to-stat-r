@@ -1,3 +1,4 @@
+encoding: UTF-8
 ---
 title: "Exploring the BRFSS data"
 output: 
@@ -46,7 +47,7 @@ Several studies have shown that exercise and health status are significantly cor
 
 **Research question 2:**
 
-Several studies have been depicted the contribution of blood pressure and cholesterol concentration to health status in western populations (Lepp‰l‰ et al. 1999), so the level of cholesterol awareness among population might help us to understand the relationship between blood pressure and health status better. Do cholesterol and high blood pressure have any relationship with health status?
+Several studies have been depicted the contribution of blood pressure and cholesterol concentration to health status in western populations (Lepp√§l√§ et al. 1999), so the level of cholesterol awareness among population might help us to understand the relationship between blood pressure and health status better. Do cholesterol and high blood pressure have any relationship with health status?
 
 **Research question 3:**
 
@@ -222,7 +223,7 @@ Based on these findings, we may conclude that there is a relationship between ob
 
 Adler NE, Boyce T, Chesney MA, Cohen S, Folkman S, Kahn RL, Syme SL. Socioeconomic status and health: the challenge of the gradient. American psychologist. 1994 Jan;49(1):15.
 
-Lepp‰l‰ JM, Virtamo J, Fogelholm R, Albanes D, Heinonen OP. Different risk factors for different stroke subtypes association of blood pressure, cholesterol, and antioxidants. Stroke. 1999 Dec 1;30(12):2535-40.
+Lepp√§l√§ JM, Virtamo J, Fogelholm R, Albanes D, Heinonen OP. Different risk factors for different stroke subtypes association of blood pressure, cholesterol, and antioxidants. Stroke. 1999 Dec 1;30(12):2535-40.
 
 Pohjonen T, Ranta R. Effects of worksite physical exercise intervention on physical fitness, perceived health status, and work ability among home care workers: five-year follow-up. Preventive medicine. 2001 Jun 30;32(6):465-75.
 
